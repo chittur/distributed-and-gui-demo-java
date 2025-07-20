@@ -27,8 +27,13 @@ The application demonstrates a distributed system where multiple instances can c
 
 ## Diagrams
 
-- **[ClassDiagram.jpeg](Images/ClassDiagram.jpeg)**: Illustrates the class structure for the application.
-- **[ModuleDiagram.jpeg](Images/ModuleDiagram.jpeg)**: Shows the modular architecture of the system.
+### Class Diagram
+![Class Diagram](Images/ClassDiagram.jpeg)
+*Illustrates the class structure for the application.*
+
+### Module Diagram
+![Module Diagram](Images/ModuleDiagram.jpeg)
+*Shows the modular architecture of the system.*
 
 ## License
 
