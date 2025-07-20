@@ -70,17 +70,33 @@ def convert_jacoco_to_cobertura(jacoco_file, cobertura_file, source_dirs):
         # Process classes in package
         for jacoco_class in jacoco_package.findall(".//class"):
             class_name = jacoco_class.get("name", "").split("/")[-1]
+            class_filename = jacoco_class.get("name", "").replace("/", "/") + ".java"
             
             # Create Cobertura class
             cobertura_class = ET.SubElement(classes, "class")
-            cobertura_class.set("name", class_name)
-            cobertura_class.set("filename", f"{package_name.replace('.', '/')}/{class_name}.java")
+            cobertura_class.set("name", f"{package_name}.{class_name}")
+            cobertura_class.set("filename", class_filename)
             cobertura_class.set("line-rate", "0.0")
             cobertura_class.set("branch-rate", "0.0")
             cobertura_class.set("complexity", "0.0")
             
             # Add methods
             methods = ET.SubElement(cobertura_class, "methods")
+            
+            # Process methods
+            for jacoco_method in jacoco_class.findall(".//method"):
+                method_name = jacoco_method.get("name", "")
+                method_desc = jacoco_method.get("desc", "")
+                
+                cobertura_method = ET.SubElement(methods, "method")
+                cobertura_method.set("name", method_name)
+                cobertura_method.set("signature", method_desc)
+                cobertura_method.set("line-rate", "0.0")
+                cobertura_method.set("branch-rate", "0.0")
+                cobertura_method.set("complexity", "0.0")
+                
+                # Add method lines
+                method_lines = ET.SubElement(cobertura_method, "lines")
             
             # Add lines
             lines = ET.SubElement(cobertura_class, "lines")
@@ -90,28 +106,58 @@ def convert_jacoco_to_cobertura(jacoco_file, cobertura_file, source_dirs):
             class_branches = 0
             class_covered_branches = 0
             
-            # Process line coverage
-            for counter in jacoco_class.findall(".//counter[@type='LINE']"):
-                missed = int(counter.get("missed", "0"))
-                covered = int(counter.get("covered", "0"))
+            # Process actual line coverage from JaCoCo
+            line_elements = jacoco_class.findall(".//line")
+            for line_element in line_elements:
+                line_number = line_element.get("nr")
+                instruction_missed = int(line_element.get("mi", "0"))
+                instruction_covered = int(line_element.get("ci", "0"))
+                branch_missed = int(line_element.get("mb", "0"))
+                branch_covered = int(line_element.get("cb", "0"))
                 
-                class_lines += missed + covered
-                class_covered_lines += covered
-                
-                # Create lines for visualization
-                for i in range(1, missed + covered + 1):
+                if line_number:
+                    # Create line element
                     line = ET.SubElement(lines, "line")
-                    line.set("number", str(i))
-                    line.set("hits", "1" if i <= covered else "0")
-                    line.set("branch", "false")
+                    line.set("number", line_number)
+                    
+                    # Determine if line is covered (if any instructions are covered)
+                    is_covered = instruction_covered > 0
+                    line.set("hits", str(instruction_covered) if is_covered else "0")
+                    
+                    # Handle branches
+                    total_line_branches = branch_missed + branch_covered
+                    if total_line_branches > 0:
+                        line.set("branch", "true")
+                        branch_percentage = int((branch_covered / total_line_branches) * 100)
+                        line.set("condition-coverage", f"{branch_percentage}% ({branch_covered}/{total_line_branches})")
+                        class_branches += total_line_branches
+                        class_covered_branches += branch_covered
+                    else:
+                        line.set("branch", "false")
+                    
+                    # Count lines
+                    if instruction_missed > 0 or instruction_covered > 0:
+                        class_lines += 1
+                        if is_covered:
+                            class_covered_lines += 1
             
-            # Process branch coverage
-            for counter in jacoco_class.findall(".//counter[@type='BRANCH']"):
-                missed = int(counter.get("missed", "0"))
-                covered = int(counter.get("covered", "0"))
-                
-                class_branches += missed + covered
-                class_covered_branches += covered
+            # If no line elements found, fall back to counter data
+            if class_lines == 0:
+                for counter in jacoco_class.findall(".//counter[@type='LINE']"):
+                    missed = int(counter.get("missed", "0"))
+                    covered = int(counter.get("covered", "0"))
+                    class_lines = missed + covered
+                    class_covered_lines = covered
+                    break
+            
+            # Process branch coverage from counters if not already processed
+            if class_branches == 0:
+                for counter in jacoco_class.findall(".//counter[@type='BRANCH']"):
+                    missed = int(counter.get("missed", "0"))
+                    covered = int(counter.get("covered", "0"))
+                    class_branches = missed + covered
+                    class_covered_branches = covered
+                    break
             
             # Update class rates
             if class_lines > 0:
@@ -169,7 +215,10 @@ def convert_jacoco_to_cobertura(jacoco_file, cobertura_file, source_dirs):
             cobertura_tree.write(f, encoding='utf-8', xml_declaration=False)
         
         print(f"Successfully converted {jacoco_file} to {cobertura_file}")
-        print(f"Coverage: {covered_lines}/{total_lines} lines ({overall_line_rate:.1%})")
+        if total_lines > 0:
+            print(f"Coverage: {covered_lines}/{total_lines} lines ({overall_line_rate:.1%})")
+        else:
+            print("Coverage: No line coverage data found")
         return True
         
     except Exception as e:

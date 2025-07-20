@@ -51,9 +51,9 @@ jobs:
     displayName: 'Run Tests with JaCoCo Coverage'
     
   - task: UsePythonVersion@0
-    displayName: 'Use Python 3.x'
+    displayName: 'Use Python 3.11'
     inputs:
-      versionSpec: '3.x'
+      versionSpec: '3.11'
       addToPath: true
     continueOnError: true
     
