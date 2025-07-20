@@ -12,7 +12,8 @@ pr:
     include:
       - main
 
-pool: 'Self-Hosted'
+pool:
+  name: Default
 
 variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
