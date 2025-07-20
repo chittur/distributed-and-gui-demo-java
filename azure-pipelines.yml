@@ -14,6 +14,8 @@ pr:
 
 pool:
   name: Default
+  demands:
+  - java
 
 variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
@@ -37,62 +39,29 @@ jobs:
         maven
       path: $(MAVEN_CACHE_FOLDER)
       
-  - task: JavaToolInstaller@0
-    displayName: 'Set up JDK 17'
-    inputs:
-      versionSpec: '17'
-      jdkArchitectureOption: 'x64'
-      jdkSourceOption: 'PreInstalled'
-      
-  - task: Maven@3
+  - script: |
+      echo "Setting up environment..."
+      java -version
+      mvn -version
+      echo "JAVA_HOME: $JAVA_HOME"
+      echo "Maven cache: $(MAVEN_CACHE_FOLDER)"
+    displayName: 'Verify Environment'
+    
+  - script: |
+      mvn -B clean compile $(MAVEN_OPTS)
     displayName: 'Clean and Compile'
-    inputs:
-      mavenPomFile: 'pom.xml'
-      goals: 'clean compile'
-      options: '-B'
-      publishJUnitResults: false
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.17'
-      mavenVersionOption: 'Default'
-      mavenOptions: '$(MAVEN_OPTS)'
-      
-  - task: Maven@3
+    
+  - script: |
+      mvn -B checkstyle:check $(MAVEN_OPTS)
     displayName: 'Run Checkstyle Code Style Checks'
-    inputs:
-      mavenPomFile: 'pom.xml'
-      goals: 'checkstyle:check'
-      options: '-B'
-      publishJUnitResults: false
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.17'
-      mavenVersionOption: 'Default'
-      mavenOptions: '$(MAVEN_OPTS)'
-      
-  - task: Maven@3
+    
+  - script: |
+      mvn -B test jacoco:report $(MAVEN_OPTS)
     displayName: 'Run Tests with Coverage'
-    inputs:
-      mavenPomFile: 'pom.xml'
-      goals: 'test jacoco:report'
-      options: '-B'
-      publishJUnitResults: true
-      testResultsFiles: '**/surefire-reports/TEST-*.xml'
-      testRunTitle: 'Unit Tests'
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.17'
-      mavenVersionOption: 'Default'
-      mavenOptions: '$(MAVEN_OPTS)'
-      
-  - task: Maven@3
+    
+  - script: |
+      mvn -B package -DskipTests $(MAVEN_OPTS)
     displayName: 'Package Application'
-    inputs:
-      mavenPomFile: 'pom.xml'
-      goals: 'package -DskipTests'
-      options: '-B'
-      publishJUnitResults: false
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.17'
-      mavenVersionOption: 'Default'
-      mavenOptions: '$(MAVEN_OPTS)'
       
   - task: PublishTestResults@2
     displayName: 'Publish Test Results'
@@ -113,18 +82,10 @@ jobs:
       reportDirectory: '**/site/jacoco'
       failIfCoverageEmpty: false
       
-  - task: Maven@3
+  - script: |
+      mvn -B checkstyle:checkstyle $(MAVEN_OPTS)
     displayName: 'Generate Checkstyle Report'
     condition: succeededOrFailed()
-    inputs:
-      mavenPomFile: 'pom.xml'
-      goals: 'checkstyle:checkstyle'
-      options: '-B'
-      publishJUnitResults: false
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.17'
-      mavenVersionOption: 'Default'
-      mavenOptions: '$(MAVEN_OPTS)'
       
   - task: CopyFiles@2
     displayName: 'Copy Build Artifacts'
