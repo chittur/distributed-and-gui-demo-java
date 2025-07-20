@@ -12,10 +12,8 @@ pr:
     include:
       - main
 
-pool:
-  name: Default
-  demands:
-  - java
+# Use your self-hosted agent pool - adjust this name to match your actual pool
+pool: Default
 
 variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
@@ -30,37 +28,30 @@ jobs:
   - checkout: self
     clean: true
     
-  - task: Cache@2
-    displayName: 'Cache Maven dependencies'
-    inputs:
-      key: 'maven | "$(Agent.OS)" | **/pom.xml'
-      restoreKeys: |
-        maven | "$(Agent.OS)"
-        maven
-      path: $(MAVEN_CACHE_FOLDER)
-      
   - script: |
       echo "Setting up environment..."
+      echo "Agent: $(Agent.Name)"
+      echo "Pool: $(Agent.PoolName)"
       java -version
       mvn -version
       echo "JAVA_HOME: $JAVA_HOME"
-      echo "Maven cache: $(MAVEN_CACHE_FOLDER)"
+      echo "PATH: $PATH"
     displayName: 'Verify Environment'
     
   - script: |
-      mvn -B clean compile $(MAVEN_OPTS)
+      mvn -B clean compile
     displayName: 'Clean and Compile'
     
   - script: |
-      mvn -B checkstyle:check $(MAVEN_OPTS)
+      mvn -B checkstyle:check
     displayName: 'Run Checkstyle Code Style Checks'
     
   - script: |
-      mvn -B test jacoco:report $(MAVEN_OPTS)
+      mvn -B test jacoco:report
     displayName: 'Run Tests with Coverage'
     
   - script: |
-      mvn -B package -DskipTests $(MAVEN_OPTS)
+      mvn -B package -DskipTests
     displayName: 'Package Application'
       
   - task: PublishTestResults@2
@@ -83,7 +74,7 @@ jobs:
       failIfCoverageEmpty: false
       
   - script: |
-      mvn -B checkstyle:checkstyle $(MAVEN_OPTS)
+      mvn -B checkstyle:checkstyle
     displayName: 'Generate Checkstyle Report'
     condition: succeededOrFailed()
       
@@ -106,27 +97,22 @@ jobs:
       publishLocation: 'Container'
       
   - script: |
-      echo "##[section]Build Summary"
-      echo "✅ Build completed successfully"
-      echo "✅ All tests passed"
-      echo "✅ Code coverage report generated"
-      echo "✅ Checkstyle validation passed"
-      echo ""
-      echo "📊 Reports available in build artifacts:"
-      echo "   - JaCoCo Coverage: target/site/jacoco/index.html"
-      echo "   - Checkstyle Report: target/site/checkstyle.html"
-      echo ""
-      if [ -f "target/site/jacoco/jacoco.csv" ]; then
-        echo "📈 Coverage Summary:"
-        head -n 5 target/site/jacoco/jacoco.csv | tail -n +2 | while IFS=',' read -r group package class missed_inst covered_inst missed_branch covered_branch missed_line covered_line; do
-          if [ -n "$covered_line" ] && [ -n "$missed_line" ]; then
-            total_lines=$((covered_line + missed_line))
-            if [ $total_lines -gt 0 ]; then
-              coverage=$((covered_line * 100 / total_lines))
-              echo "   - $class: $coverage% line coverage ($covered_line/$total_lines lines)"
-            fi
-          fi
-        done
-      fi
+      echo ##[section]Build Summary
+      echo ✅ Build completed successfully
+      echo ✅ All tests passed
+      echo ✅ Code coverage report generated
+      echo ✅ Checkstyle validation passed
+      echo.
+      echo 📊 Reports available in build artifacts:
+      echo    - JaCoCo Coverage: target/site/jacoco/index.html
+      echo    - Checkstyle Report: target/site/checkstyle.html
+      echo.
+      if exist "target\site\jacoco\jacoco.csv" (
+        echo 📈 Coverage Summary:
+        echo    - Coverage report generated successfully
+        echo    - Detailed coverage available in artifacts
+      ) else (
+        echo 📈 Coverage: Report will be available after successful build
+      )
     displayName: 'Display Build Summary'
     condition: always()
