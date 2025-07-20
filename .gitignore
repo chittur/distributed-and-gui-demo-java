@@ -1,0 +1,99 @@
+# Java compiled output
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven build output
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# C# compiled output
+*.obj
+*.exe
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+*.lib
+*.sbr
+*.sdf
+*.opensdf
+*.unsuccessfulbuild
+*.tlog
+*.ipch
+*.idb
+*.iobj
+*.ipdb
+
+# C# build directories
+bin/
+obj/
+TestResults/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.eclipse/
+.classpath
+.project
+.settings/
+.vs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Other temporary files
+*.log
+*.cache
+*.diff
+*.patch
+*.tmp
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Dependency directories
+/lib/
+/dependencies/
+
+# Ignore Maven wrapper if present
+mvnw
+mvnw.cmd
+
+# Ignore Visual Studio temporary files
+*.swp
+*.swo
+*.swn
+
+# Ignore NuGet packages
+packages/
+
+# Project-specific ignores
+DistributedGuiDemoDotnet/**/*.user
+DistributedGuiDemoDotnet/**/*.cache
+DistributedGuiDemoJava/target/
