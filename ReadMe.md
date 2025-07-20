@@ -35,6 +35,11 @@ The project includes an Azure DevOps pipeline (`azure-pipelines.yml`) that:
 - ✅ Publishes test results and interactive coverage visualization
 - ✅ Creates downloadable build artifacts
 
+#### Self-Hosted Agent Setup
+The pipeline is configured for self-hosted agents and uses a Windows batch script (`jacoco-to-cobertura.bat`) for code coverage conversion. The batch script extracts real coverage data from JaCoCo XML and generates proper Cobertura format with actual line numbers for enhanced Azure DevOps visualization.
+
+No additional dependencies are required - the pipeline works out of the box with Java and Maven.
+
 ## Diagrams
 
 ### Class Diagram

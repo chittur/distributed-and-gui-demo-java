@@ -50,22 +50,9 @@ jobs:
       mvn -B test jacoco:report
     displayName: 'Run Tests with JaCoCo Coverage'
     
-  - task: UsePythonVersion@0
-    displayName: 'Use Python 3.11'
-    inputs:
-      versionSpec: '3.11'
-      addToPath: true
-    continueOnError: true
-    
   - script: |
-      python --version >nul 2>&1
-      if %errorlevel% equ 0 (
-        echo Using Python conversion script...
-        python jacoco-to-cobertura.py
-      ) else (
-        echo Python not available, using batch script fallback...
-        call jacoco-to-cobertura.bat
-      )
+      echo Converting JaCoCo to Cobertura format using batch script...
+      call jacoco-to-cobertura.bat
     displayName: 'Convert JaCoCo to Cobertura Format'
     condition: succeededOrFailed()
     
