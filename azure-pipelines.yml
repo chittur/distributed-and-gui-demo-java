@@ -85,7 +85,6 @@ jobs:
     inputs:
       codeCoverageTool: 'Cobertura'
       summaryFileLocation: '**/cobertura/coverage.xml'
-      reportDirectory: '**/site/cobertura'
       failIfCoverageEmpty: false
       
   - script: |
