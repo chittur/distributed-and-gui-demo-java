@@ -21,7 +21,9 @@ The application demonstrates a distributed system where multiple instances can c
 ### Java Implementation
 1. **Prerequisites**: Ensure you have JDK 17 or later installed (download from https://www.oracle.com/java/technologies/javase-jdk17-downloads.html or https://adoptium.net/) and Maven installed (download from https://maven.apache.org/download.cgi). Set the `JAVA_HOME` environment variable and ensure `mvn` is in your PATH.
 2. **Build**: Navigate to the project root in a terminal or command prompt and run `mvn clean install` to compile and download dependencies.
-3. **Run**: Launch the application with `mvn javafx:run` to start the JavaFX GUI.
+3. **Run**: 
+   - **Development**: Launch with `mvn javafx:run` for development
+   - **Production**: Build executable JAR with `mvn package` then run `java -jar target/distributed-gui-demo-java-1.0-SNAPSHOT.jar`
 4. **Testing**: Run unit tests with `mvn test` to execute the test suite located in `src/test/java/`.
 5. **Coverage**: Generate code coverage reports with `mvn test jacoco:report` for JaCoCo coverage analysis and Azure DevOps visualization.
 6. **IDE Support**: Import the project into IntelliJ IDEA or Eclipse by opening the `pom.xml` file for easier development and testing.
