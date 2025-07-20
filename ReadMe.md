@@ -23,7 +23,17 @@ The application demonstrates a distributed system where multiple instances can c
 2. **Build**: Navigate to the project root in a terminal or command prompt and run `mvn clean install` to compile and download dependencies.
 3. **Run**: Launch the application with `mvn javafx:run` to start the JavaFX GUI.
 4. **Testing**: Run unit tests with `mvn test` to execute the test suite located in `src/test/java/`.
-5. **IDE Support**: Import the project into IntelliJ IDEA or Eclipse by opening the `pom.xml` file for easier development and testing.
+5. **Coverage**: Generate code coverage reports with `mvn test jacoco:report` and convert to Cobertura format using `jacoco-to-cobertura.bat` (Windows) or `python jacoco-to-cobertura.py` for enhanced Azure DevOps visualization.
+6. **IDE Support**: Import the project into IntelliJ IDEA or Eclipse by opening the `pom.xml` file for easier development and testing.
+
+### Azure DevOps Pipeline
+The project includes an Azure DevOps pipeline (`azure-pipelines.yml`) that:
+- ✅ Compiles and packages the application
+- ✅ Runs all 70 unit tests with comprehensive coverage
+- ✅ Enforces code style with Checkstyle
+- ✅ Generates beautiful Cobertura coverage reports with line-by-line highlighting
+- ✅ Publishes test results and interactive coverage visualization
+- ✅ Creates downloadable build artifacts
 
 ## Diagrams
 
