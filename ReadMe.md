@@ -23,7 +23,7 @@ The application demonstrates a distributed system where multiple instances can c
 2. **Build**: Navigate to the project root in a terminal or command prompt and run `mvn clean install` to compile and download dependencies.
 3. **Run**: Launch the application with `mvn javafx:run` to start the JavaFX GUI.
 4. **Testing**: Run unit tests with `mvn test` to execute the test suite located in `src/test/java/`.
-5. **Coverage**: Generate code coverage reports with `mvn test jacoco:report` and convert to Cobertura format using `jacoco-to-cobertura.bat` (Windows) or `python jacoco-to-cobertura.py` for enhanced Azure DevOps visualization.
+5. **Coverage**: Generate code coverage reports with `mvn test jacoco:report` for JaCoCo coverage analysis and Azure DevOps visualization.
 6. **IDE Support**: Import the project into IntelliJ IDEA or Eclipse by opening the `pom.xml` file for easier development and testing.
 
 ### Azure DevOps Pipeline
@@ -31,12 +31,12 @@ The project includes an Azure DevOps pipeline (`azure-pipelines.yml`) that:
 - ✅ Compiles and packages the application
 - ✅ Runs all 70 unit tests with comprehensive coverage
 - ✅ Enforces code style with Checkstyle
-- ✅ Generates beautiful Cobertura coverage reports with line-by-line highlighting
+- ✅ Generates JaCoCo coverage reports with real line numbers
 - ✅ Publishes test results and interactive coverage visualization
 - ✅ Creates downloadable build artifacts
 
 #### Self-Hosted Agent Setup
-The pipeline is configured for self-hosted agents and uses a Windows batch script (`jacoco-to-cobertura.bat`) for code coverage conversion. The batch script extracts real coverage data from JaCoCo XML and generates proper Cobertura format with actual line numbers for enhanced Azure DevOps visualization.
+The pipeline is configured for self-hosted agents and uses native JaCoCo coverage reporting. JaCoCo provides accurate line numbers and coverage data directly from your source code without any conversion needed.
 
 No additional dependencies are required - the pipeline works out of the box with Java and Maven.
 

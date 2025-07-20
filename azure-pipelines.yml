@@ -51,12 +51,6 @@ jobs:
     displayName: 'Run Tests with JaCoCo Coverage'
     
   - script: |
-      echo Converting JaCoCo to Cobertura format using batch script...
-      call jacoco-to-cobertura.bat
-    displayName: 'Convert JaCoCo to Cobertura Format'
-    condition: succeededOrFailed()
-    
-  - script: |
       mvn -B package -DskipTests
     displayName: 'Package Application'
       
@@ -77,14 +71,6 @@ jobs:
       codeCoverageTool: 'JaCoCo'
       summaryFileLocation: '**/jacoco.xml'
       reportDirectory: '**/site/jacoco'
-      failIfCoverageEmpty: false
-      
-  - task: PublishCodeCoverageResults@1
-    displayName: 'Publish Cobertura Coverage (Enhanced UI)'
-    condition: succeededOrFailed()
-    inputs:
-      codeCoverageTool: 'Cobertura'
-      summaryFileLocation: '**/cobertura/coverage.xml'
       failIfCoverageEmpty: false
       
   - script: |
@@ -114,23 +100,22 @@ jobs:
       echo ##[section]Build Summary
       echo ✅ Build completed successfully
       echo ✅ All tests passed (70/70)
-      echo ✅ JaCoCo and Cobertura coverage reports generated
+      echo ✅ JaCoCo coverage reports generated
       echo ✅ Checkstyle validation passed
       echo.
       echo 📊 Reports available in build artifacts:
       echo    - JaCoCo Coverage: target/site/jacoco/index.html
-      echo    - Cobertura Coverage: target/site/cobertura/coverage.xml
       echo    - Checkstyle Report: target/site/checkstyle.html
       echo.
       echo 🎯 Azure DevOps Integration:
-      echo    - Beautiful Cobertura coverage visualization
-      echo    - Line-by-line coverage highlighting
+      echo    - Native JaCoCo coverage visualization
+      echo    - Real line numbers from source code
       echo    - Interactive drill-down reports
       echo.
       if exist "target\site\jacoco\jacoco.csv" (
         echo 📈 Coverage Summary:
-        echo    - JaCoCo and Cobertura reports generated successfully
-        echo    - Enhanced coverage UI available in Azure DevOps
+        echo    - JaCoCo reports generated successfully
+        echo    - Native coverage UI available in Azure DevOps
       ) else (
         echo 📈 Coverage: Reports will be available after successful build
       )
