@@ -1,10 +1,35 @@
-# Distributed GUI Demo
+# Overview
 
 This repository contains a Java implementation of a distributed GUI demo application showcasing MVVM architecture, networking with UDP, and messaging capabilities for both chat and images. This project is built based on the original .NET application available at: https://github.com/chittur/distributed-and-gui-demo
 
-## Overview
-
 The application demonstrates a distributed system where multiple instances can communicate over a network using UDP. It supports sending and receiving text messages and images, with a GUI interface to interact with the system. The implementation follows the Model-View-ViewModel (MVVM) design pattern to separate concerns between the UI and business logic, alongside other patterns like factory and observer for creating communicators and handling messages.
+
+# Design
+These are the modules in this project
+
+- **networking**
+
+This module defines the types required to send and receive data across process/machine boundaries.
+ - *UdpCommunicator*: A class that communicates via the UDP protocol.
+   - This is a *serialized messaging passing* model as opposed to an *inter-object communication* model like RPC or Java RMI. This implies that the module needs to serialize the data before sending it as bytes. On the receiving end, the data is deserialized, and the original message recreated. While the serialization and conversion to-and-from bytes are handled by the networking layer, it has the benefit that the networking module is agnostic to the type of the message. It just sends and receives messages. The messages themselves are processed by higher level modules that care about the format and the details of the message.
+   - UDP is a less reliable protocol than TCP. But we are going with UDP here to keep this simple for a demo program.
+ - *CommunicatorFactory*: This class uses the *factory pattern* to abstract away the details of the communicator implementation from its clients.
+ - *IMessageListener Interface*: This interface lets clients subscribe for notifications from the communicator. If the communicator receives a message meant for a particular client, the client can register for callback notification from the communicator via this interface. We use the *Publisher-Subscriber* design pattern here.
+
+- **chatmessaging**
+This is a simple demonstration of a *processing module*, one that processes data. In this case, this module handles chat messages passed to it from the UX layer, and sends them over to the communication layer. It also subscribes for notifications from the communication layer. You could imagine a lot more involved design for a more substantial project; with metadata, storage, and analysis capabilities. In this case, we are keeping the module simple given it is a demo project.
+
+- **imagemessaging**
+This module is similar to the chatmessaging module, except that it processes image messages instead of chat messages. It handles large image data by implementing a chunking mechanism to split images into smaller UDP packets and reassemble them on the receiving end, ensuring reliable delivery even when packets arrive out of order.
+
+- **viewmodel**
+We are using the Model-View-ViewModel (MVVM) design pattern for our User Experience layer, and this module serves as the ViewModel component of this architecture. It provides data binding properties and handles the business logic between the View and the messaging modules.
+
+- **gui**
+This module is the *View* of our User Experience layer, and defines its JavaFX-based GUI. It includes the main window controller and FXML layout files that define the user interface for sending and receiving messages and images.
+
+- **Tests**
+This module defines unit tests, integration tests and end-to-end tests for this project, ensuring code quality and functionality across all components.
 
 ## Project Structure
 
