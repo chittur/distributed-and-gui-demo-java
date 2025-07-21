@@ -11,11 +11,16 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.image.Image;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * ViewModel for the main page, handling business logic and data binding.
  */
 public class MainPageViewModel {
 
+    /** Logger for logging information and errors. */
+    private static final Logger LOGGER = Logger.getLogger(MainPageViewModel.class.getName());
     /** Messenger for handling chat messages. */
     private final ChatMessenger chatMessenger;
     /** Messenger for handling image messages. */
@@ -122,13 +127,26 @@ public class MainPageViewModel {
                 final String[] parts = base64Image.split(",");
                 base64Data = parts[1];
             }
+            
             // Decode base64 string to byte array
             final byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Data);
+            
             // Convert byte array to Image
-            return new Image(new java.io.ByteArrayInputStream(imageBytes));
+            final Image image = new Image(new java.io.ByteArrayInputStream(imageBytes));
+            
+            // Check if image loaded successfully
+            if (image.isError()) {
+                LOGGER.log(Level.SEVERE, "Failed to decode received image: {0}", image.getException());
+                return null;
+            }
+            
+            LOGGER.log(Level.INFO, "Successfully received and decoded image: {0} bytes, {1}x{2}", 
+                new Object[]{imageBytes.length, (int) image.getWidth(), (int) image.getHeight()});
+            
+            return image;
         } catch (Exception e) {
-            e.printStackTrace();
-            return null; // Return null if decoding fails
+            LOGGER.log(Level.SEVERE, "Exception decoding image: {0}", e.getMessage());
+            return null;
         }
     }
 }

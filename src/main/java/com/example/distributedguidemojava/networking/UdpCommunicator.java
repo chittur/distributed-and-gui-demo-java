@@ -9,12 +9,16 @@ import java.net.UnknownHostException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Communicator implementation using UDP for network communication.
  */
 public class UdpCommunicator implements ICommunicator {
 
+    /** Logger for logging information and errors. */
+    private static final Logger LOGGER = Logger.getLogger(UdpCommunicator.class.getName());
     /** The UDP socket used for communication. */
     private final DatagramSocket socket;
     /** The port on which the communicator listens for incoming messages. */
@@ -39,7 +43,7 @@ public class UdpCommunicator implements ICommunicator {
         listenThread = new Thread(this::listenerThreadProc);
         listenThread.setDaemon(true); // Stop the thread when the application exits
         listenThread.start();
-        System.out.println("UDP Communicator listening on port " + listenPort);
+        LOGGER.log(Level.INFO, "UDP Communicator listening on port {0}", listenPort);
     }
 
     @Override
@@ -71,9 +75,9 @@ public class UdpCommunicator implements ICommunicator {
             final DatagramPacket packet = new DatagramPacket(sendData, sendData.length, address, port);
             socket.send(packet);
         } catch (UnknownHostException e) {
-            System.err.println("Unknown host: " + ipAddress);
+            LOGGER.log(Level.WARNING, "Unknown host: {0}", ipAddress);
         } catch (IOException e) {
-            System.err.println("Error sending message: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error sending message: {0}", e.getMessage());
         }
     }
 
@@ -98,14 +102,15 @@ public class UdpCommunicator implements ICommunicator {
      * Listens for incoming messages on the UDP socket.
      */
     private void listenerThreadProc() {
-        final int bufferSize = 1024 * 1024;
+        // Buffer size for UDP: handles image chunks + large test messages
+        final int bufferSize = 65536; // 64KB buffer - handles chunks and large test cases
         final byte[] receiveData = new byte[bufferSize];
         while (true) {
             try {
                 final DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(packet);
                 final String payload = new String(packet.getData(), 0, packet.getLength());
-                System.out.println("Received payload: " + payload);
+                LOGGER.log(Level.FINE, "Received payload: {0}", payload);
 
                 // Expected format: senderId:message
                 final String[] tokens = payload.split(":", 2);
@@ -117,12 +122,12 @@ public class UdpCommunicator implements ICommunicator {
                         if (listener != null) {
                             listener.onMessageReceived(message);
                         } else {
-                            System.err.println("Received message for unknown subscriber: " + id);
+                            LOGGER.log(Level.WARNING, "Received message for unknown subscriber: {0}", id);
                         }
                     }
                 }
             } catch (IOException e) {
-                System.err.println("Error receiving message: " + e.getMessage());
+                LOGGER.log(Level.SEVERE, "Error receiving message: {0}", e.getMessage());
             }
         }
     }

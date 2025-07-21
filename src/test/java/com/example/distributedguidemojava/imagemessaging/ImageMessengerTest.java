@@ -237,5 +237,35 @@ public class ImageMessengerTest {
             capturedListener.onMessageReceived(imageId + ":0:3:" + chunk1);
             capturedListener.onMessageReceived(imageId + ":2:3:" + chunk3);
         });
+        
+        // Verify callback was called with correctly reconstructed data "abc"
+        verify(mockCallback).accept("abc");
+    }
+
+    @Test
+    public void testHandleReceivedChunkOutOfOrderLargerChunks() throws InterruptedException {
+        String imageId = "test-image-large-out-of-order";
+        String chunk1 = "AAAA";
+        String chunk2 = "BBBB";
+        String chunk3 = "CCCC";
+        String chunk4 = "DDDD";
+        
+        // Use CountDownLatch to ensure proper verification
+        CountDownLatch latch = new CountDownLatch(1);
+        Consumer<String> testCallback = data -> {
+            assertEquals("AAAABBBBCCCCDDDD", data);
+            latch.countDown();
+        };
+        
+        imageMessenger.setOnImageMessageReceived(testCallback);
+        
+        // Send chunks completely out of order: 4, 2, 1, 3
+        capturedListener.onMessageReceived(imageId + ":3:4:" + chunk4);
+        capturedListener.onMessageReceived(imageId + ":1:4:" + chunk2);
+        capturedListener.onMessageReceived(imageId + ":0:4:" + chunk1);
+        capturedListener.onMessageReceived(imageId + ":2:4:" + chunk3);
+        
+        // Wait for callback to be called
+        assertTrue(latch.await(1, TimeUnit.SECONDS), "Callback should be called within 1 second");
     }
 }

@@ -31,7 +31,7 @@ The application demonstrates a distributed system where multiple instances can c
 ### Azure DevOps Pipeline
 The project includes an Azure DevOps pipeline (`azure-pipelines.yml`) that:
 - ✅ Compiles and packages the application
-- ✅ Runs all 70 unit tests with comprehensive coverage
+- ✅ Runs all unit tests with comprehensive coverage
 - ✅ Enforces code style with Checkstyle
 - ✅ Generates JaCoCo coverage reports with real line numbers
 - ✅ Publishes test results and interactive coverage visualization

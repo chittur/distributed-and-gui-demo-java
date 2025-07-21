@@ -29,8 +29,8 @@ public class ImageMessenger {
     private final ICommunicator communicator;
     /** Callback invoked when an image message is received. */
     private Consumer<String> onImageMessageReceived;
-    /** Map to store received chunks of images. */
-    private Map<String, StringBuilder> receivedChunks = new HashMap<>();
+    /** Map to store received chunks of images in order. */
+    private Map<String, Map<Integer, String>> receivedChunks = new HashMap<>();
     /** Map to store the expected number of chunks for each image. */
     private Map<String, Integer> expectedChunks = new HashMap<>();
 
@@ -128,32 +128,36 @@ public class ImageMessenger {
                 new Object[]{chunkIndex + 1, totalChunks, imageId, chunkData.length()});
 
             // Initialize storage for this image if not already present
-            receivedChunks.computeIfAbsent(imageId, k -> new StringBuilder());
+            receivedChunks.computeIfAbsent(imageId, k -> new HashMap<>());
             expectedChunks.putIfAbsent(imageId, totalChunks);
 
-            // Append the chunk at the correct position (though order might not be guaranteed with UDP)
-            final StringBuilder imageData = receivedChunks.get(imageId);
-            imageData.append(chunkData);
+            // Store the chunk at the correct position
+            final Map<Integer, String> imageChunks = receivedChunks.get(imageId);
+            imageChunks.put(chunkIndex, chunkData);
 
             // Check if all chunks are received
-            final int expectedLength = CHUNK_SIZE * (totalChunks - 1);
-            final int lastChunkSize = chunkData.length() % CHUNK_SIZE;
-            final int finalChunkSize;
-            if (lastChunkSize == 0) {
-                finalChunkSize = CHUNK_SIZE;
-            } else {
-                finalChunkSize = lastChunkSize;
-            }
-            if (imageData.length() >= expectedLength + finalChunkSize) {
+            if (imageChunks.size() == totalChunks) {
+                // Reconstruct the image in the correct order
+                final StringBuilder imageData = new StringBuilder();
+                for (int i = 0; i < totalChunks; i++) {
+                    if (imageChunks.containsKey(i)) {
+                        imageData.append(imageChunks.get(i));
+                    } else {
+                        // Missing chunk, wait for more
+                        return;
+                    }
+                }
+                
                 if (onImageMessageReceived != null) {
                     LOGGER.log(Level.INFO, "All chunks received for img {0}, len: {1}", 
                         new Object[]{imageId, imageData.length()});
                     onImageMessageReceived.accept(imageData.toString());
                     LOGGER.log(Level.INFO, "Img data passed to callback for {0}", imageId);
-                    // Clean up
-                    receivedChunks.remove(imageId);
-                    expectedChunks.remove(imageId);
                 }
+                
+                // Clean up
+                receivedChunks.remove(imageId);
+                expectedChunks.remove(imageId);
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error processing received chunk: {0}", e.getMessage());
