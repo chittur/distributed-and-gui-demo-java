@@ -99,7 +99,7 @@ jobs:
   - script: |
       echo ##[section]Build Summary
       echo ✅ Build completed successfully
-      echo ✅ All tests passed (70/70)
+      echo ✅ All tests passed
       echo ✅ JaCoCo coverage reports generated
       echo ✅ Checkstyle validation passed
       echo.
